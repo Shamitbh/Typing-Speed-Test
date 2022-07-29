@@ -1,6 +1,7 @@
 import curses
 from curses import wrapper # used to iniitalize curses module and then restore state after finished
 import time # used to calculate WPM
+import random # used for selecting random line in text file
 
 def starting_screen(stdscr):
     # clears screen from last run
@@ -23,8 +24,15 @@ def display_text(stdscr, targetText, currentText, wpm=0):
             color = curses.color_pair(2)  # change text color to red
         stdscr.addstr(0, i, char, color)
 
+def load_text_from_file():
+    # chooses random text line from sampleText.txt for user to try and test against
+    with open("sampleText.txt", "r") as f:
+        lines = f.readlines()
+        return random.choice(lines).strip()
+
+
 def wpm_test(stdscr):
-    targetText = "Hello World! This is some sample text for the wpm test!"
+    targetText = load_text_from_file()
     currentText = []
     wpm = 0
     startTime = time.time()
@@ -49,6 +57,8 @@ def wpm_test(stdscr):
         except:
             continue
 
+        if currentText == []:
+            startTime = time.time()
         # check if key is escape and if so exit loop
         if ord(key) == 27: 
             break
