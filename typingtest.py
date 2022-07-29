@@ -1,5 +1,6 @@
 import curses
 from curses import wrapper # used to iniitalize curses module and then restore state after finished
+import time # used to calculate WPM
 
 def starting_screen(stdscr):
     # clears screen from last run
@@ -12,6 +13,7 @@ def starting_screen(stdscr):
 
 def display_text(stdscr, targetText, currentText, wpm=0):
     stdscr.addstr(targetText, curses.color_pair(3))
+    stdscr.addstr(1, 0, f"WPM: {wpm}")
     # loop through current text and display overlaying the target text
     for i, char in enumerate(currentText):
         # check if the current text is the correct char. If so display in green, otherwise red.
@@ -24,14 +26,23 @@ def display_text(stdscr, targetText, currentText, wpm=0):
 def wpm_test(stdscr):
     targetText = "Hello World! This is some sample text for the wpm test!"
     currentText = []
-    
+    wpm = 0
+    startTime = time.time()
+    # avoid stdscr.getkey() being a blocker for wpm calculation
+    stdscr.nodelay(True)
+
     while True:
+        timeElapsed = max(time.time() - startTime, 1) # max function to ensure at least 1 second has elapsed
+        wpm = round((len(currentText) / (timeElapsed / 60)) / 5) # assumes that average word has 5 character
         stdscr.clear()
-        display_text(stdscr, targetText, currentText)
+        display_text(stdscr, targetText, currentText, wpm)
         stdscr.refresh()
 
         # get key from user
-        key = stdscr.getkey()
+        try:
+            key = stdscr.getkey()
+        except:
+            continue
 
         # check if key is escape and if so exit loop
         if ord(key) == 27: 
